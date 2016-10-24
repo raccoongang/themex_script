@@ -1,0 +1,12 @@
+#!/bin/bash
+cd /edx/app/edxapp/edx-platform
+source /edx/app/edxapp/edxapp_env
+
+# The default settings set in edxapp_env can be overridden
+# using the var $EDX_PLATFORM_SETTINGS_OVERRIDE
+
+if [[ -n "$EDX_PLATFORM_SETTINGS_OVERRIDE" ]]; then
+    export EDX_PLATFORM_SETTINGS="$EDX_PLATFORM_SETTINGS_OVERRIDE"
+fi
+
+sudo -E -u edxapp env "PATH=$PATH" /edx/app/edxapp/venvs/edxapp/bin/paver update_assets cms --settings $EDX_PLATFORM_SETTINGS

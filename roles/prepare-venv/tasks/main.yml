@@ -1,0 +1,29 @@
+---
+
+- name: Update repositories cache and install packages
+  apt: name="{{ item }}" update_cache=yes
+  with_items:
+    - python-pip
+    - libffi-dev
+  become_method: sudo
+  become: yes
+  become_user: root
+
+- name: install libraries with pip
+  action: pip name="{{ item }}" state=present
+  with_items:
+    - virtualenv
+
+- name: Create tmp edxthemevenv
+  file: path=/tmp/edxthemevenv state=directory
+
+- name: copy requirements to edxthemevenv
+  copy: src={{ item }} dest=/tmp/edxthemevenv
+  with_items:
+    - requirements_main.txt
+
+- name: install requirements
+  action: pip requirements="{{ item }}" virtualenv=/tmp/edxthemevenv state=present
+  with_items:
+    - /tmp/edxthemevenv/requirements_main.txt
+
