@@ -1,8 +1,8 @@
-#To Update COMPREHENSIVE THEME run script:
-
 git clone https://github.com/raccoongang/themex_script.git
 
-cd update-comprehensive-theme/
+cd themex_script
 
-./update_theme.sh theme_branch_name
+./update_theme.sh marvel-yellow-theme-eucalyptus ​
 
+
+More detailed instruction is available here - https://themex.io/install/
