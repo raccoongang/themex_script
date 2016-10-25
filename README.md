@@ -1,4 +1,4 @@
-#To update Comprehensive Theme run the script aa:
+#To update a Comprehensive Theme run the script:
 
 - git clone https://github.com/raccoongang/themex_script.git
 
@@ -9,4 +9,3 @@
 
 More detailed instruction is available [here](https://themex.io/install/)
 
-ddsdd
