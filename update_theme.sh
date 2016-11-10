@@ -1,4 +1,5 @@
 #!/bin/bash
+
 if [ -z "$1" ]
 then
     echo "theme is unset: use --> ./update_theme.sh theme_branch"
@@ -12,4 +13,3 @@ else
 	fi
 
 fi
-
