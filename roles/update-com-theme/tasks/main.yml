@@ -34,8 +34,23 @@
   stat: path={{ theme_dir }}
   register: check_theme_root_exist
 
+- name: Remove theme directory
+  file: 
+    path: "{{ theme_dir }}/{{ theme_branch }}" 
+    state: absent
+  when: check_theme_root_exist.stat.exists
+  become_method: sudo
+  become: yes
+  become_user: edxapp
+  
 - name: Clone git theme repo
-  shell: cd {{ theme_dir }}/ && rm -rf {{ theme_dir }}/{{ theme_branch }} && git clone {{ theme_repo }} -b {{ theme_branch }} {{ theme_dir }}/{{ theme_branch }}
+  git: 
+    repo: "{{ theme_repo }}"
+    version: "{{ theme_branch }}"
+    dest: "{{ theme_dir }}/{{ theme_branch }}"
+    ssh_opts: "-o StrictHostKeyChecking=no"
+    accept_hostkey: yes
+    force: yes
   when: check_theme_root_exist.stat.exists
   become_method: sudo
   become: yes
