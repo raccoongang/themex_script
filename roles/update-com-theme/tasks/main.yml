@@ -12,11 +12,18 @@
 # json_path: '/edx/app/edxapp'
 #------------------------------
 - name: Check if devstack exist
-  stat: path="/vagrant"
+  stat: 
+    path: "/vagrant"
   register: devstack
 
+- name: Check if git private key ( ~/.ssh/id_rsa_git ) exists
+  stat: 
+    path: "~/.ssh/id_rsa_git"
+  register: git_st
+
 - name: Check if devstack
-  fail: msg="Playbook not applicable for devstack"
+  fail: 
+    msg: "Playbook not applicable for devstack"
   when: devstack.stat.exists
 
 - name: Get time
@@ -25,13 +32,16 @@
   run_once: true
 
 - name: Create themes root dir
-  file: path="{{ theme_dir }}" state=directory
+  file: 
+    path: "{{ theme_dir }}" 
+    state: directory
   become_method: sudo
   become: yes
   become_user: edxapp
 
 - name: Check if themes root dir exist
-  stat: path={{ theme_dir }}
+  stat: 
+    path: "{{ theme_dir }}"
   register: check_theme_root_exist
 
 - name: Remove theme directory
@@ -42,6 +52,31 @@
   become_method: sudo
   become: yes
   become_user: edxapp
+
+- name: Create .ssh directory for edxapp
+  file: 
+    path: "/edx/app/edxapp/.ssh"
+    state: directory 
+    owner: "edxapp" 
+    group: "www-data"
+    recurse: yes
+  become_method: sudo
+  become: yes
+  become_user: "root"
+  when: "'https://' not in theme_repo" and git_st.stat.islnk is defined
+
+- name: Deploy git SSH private key for edxapp
+  copy:
+    content: "{{ git_key }}"
+    dest: "/edx/app/edxapp/.ssh/id_rsa"
+    owner: "edxapp"
+    group: "edxapp" 
+    mode: 0600
+    force: yes
+  become_method: sudo
+  become: yes
+  become_user: "root"
+  when: "'https://' not in theme_repo" and git_st.stat.islnk is defined
   
 - name: Clone git theme repo
   git: 
@@ -57,109 +92,81 @@
   become_user: edxapp
 
 - name: Check if "{{server_vars_path}}" exist
-  stat: path="{{server_vars_path}}"
+  stat: 
+    path: "{{ server_vars_path }}"
   register: server_vars
 
 - name: Check edx-platform vars file
-  fail: msg="{{server_vars_path}} does not exists"
+  fail: 
+    msg: "{{ server_vars_path }} does not exists"
   when: not server_vars.stat.exists
 
-- name: Check if "{{server_vars_path}}" exist
-  command: cp "{{server_vars_path}}" "{{server_vars_path}}_{{ current_back.stdout }}"
+- name: Backup server-vars.yml
+  local_action: command cp "{{ server_vars_path }}" "{{ server_vars_path }}_{{ current_back.stdout }}"
   become_method: sudo
   become: yes
   become_user: root
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_COMPREHENSIVE_THEME_DIR             
-  lineinfile: dest="{{server_vars_path}}"
-              regexp='^EDXAPP_COMPREHENSIVE_THEME_DIR:'
-              insertafter=EOF
-              line='EDXAPP_COMPREHENSIVE_THEME_DIR{{':'}} "{{ theme_dir }}/{{ theme_branch }}"'
-              state=present
+  local_action: lineinfile
+  args: 
+    dest: "{{ server_vars_path }}"
+    regexp: '^EDXAPP_COMPREHENSIVE_THEME_DIR:'
+    insertafter: EOF
+    line: 'EDXAPP_COMPREHENSIVE_THEME_DIR: "{{ theme_dir }}/{{ theme_branch }}"'
+    state: present
   become_method: sudo
   become: yes
   become_user: root
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_COMPREHENSIVE_THEME_DIRS              
-  lineinfile: dest="{{server_vars_path}}"
-              regexp='^EDXAPP_COMPREHENSIVE_THEME_DIRS:'
-              insertafter=EOF
-              line="EDXAPP_COMPREHENSIVE_THEME_DIRS{{':'}}  [{{theme_dir}}]"
-              state=present
+  local_action: lineinfile
+  args:
+    dest: "{{ server_vars_path }}"
+    regexp: '^EDXAPP_COMPREHENSIVE_THEME_DIRS:'
+    insertafter: EOF
+    line: "EDXAPP_COMPREHENSIVE_THEME_DIRS:  [{{theme_dir}}]"
+    state: present
   become_method: sudo
   become: yes
   become_user: root
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_DEFAULT_SITE_THEME
-  lineinfile: dest="{{server_vars_path}}"
-              regexp='^EDXAPP_DEFAULT_SITE_THEME:'
-              insertafter=EOF
-              line='EDXAPP_DEFAULT_SITE_THEME{{':'}} "{{ SITE_THEME }}"'
-              state=present
+  local_action: lineinfile
+  args:
+    dest: "{{ server_vars_path }}"
+    regexp: '^EDXAPP_DEFAULT_SITE_THEME:'
+    insertafter: EOF
+    line: 'EDXAPP_DEFAULT_SITE_THEME: "{{ SITE_THEME }}"'
+    state: present
   become_method: sudo
   become: yes
   become_user: root
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_ENABLE_COMPREHENSIVE_THEMING             
-  lineinfile: dest="{{server_vars_path}}"
-              regexp='^EDXAPP_ENABLE_COMPREHENSIVE_THEMING:'
-              insertafter=EOF
-              line='EDXAPP_ENABLE_COMPREHENSIVE_THEMING{{':'}} true'
-              state=present
+  local_action: lineinfile
+  args: 
+    dest: "{{server_vars_path}}"
+    regexp: '^EDXAPP_ENABLE_COMPREHENSIVE_THEMING:'
+    insertafter: EOF
+    line: 'EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true'
+    state: present
   become_method: sudo
   become: yes
   become_user: root
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
 
-#- name: Ensure that server-vars contain EDXAPP_FEATURES
-#  lineinfile: dest="{{server_vars_path}}"
-#              regexp='^EDXAPP_FEATURES:'
-#              insertafter=EOF
-#              line='EDXAPP_FEATURES{{':'}}'
-#              state=present
-#  become_method: sudo
-#  become: yes
-#  become_user: root
-#  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
- 
-#- name: Ensure that USE_CUSTOM_THEME false in EDXAPP_FEATURES block
-#  blockinfile:
-#    dest: "{{server_vars_path}}"
-#    marker: "#{mark} USE_CUSTOM_THEME"
-#    insertafter: "^EDXAPP_FEATURES:"
-#    block: |
-#       {{' '}}USE_CUSTOM_THEME: false
-#  become_method: sudo
-#  become: yes
-#  become_user: root
-#  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
-
-
-- name: get current edx-platform git branch
+- name: Get current edx-platform git branch
   shell: cd /edx/app/edxapp/edx-platform/ && git branch | grep \* | sed "s/(\|)//g" | sed "s/*//g" | awk '{print $NF }'
   register: git_branch_output
   become_method: sudo
   become: yes
   become_user: edxapp
 
-- name: run /edx/bin/update
-  shell: "/edx/bin/update edx-platform {{ git_branch_output.stdout }} > /tmp/theme-update-edx.log"
-  become_method: sudo
-  become: yes
-  become_user: root
+- name: Run /edx/bin/update
+  local_action: shell /edx/bin/update edx-platform "{{ git_branch_output.stdout }}" > /tmp/theme-update-edx.log
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
-
-- name: gather "{{item}}" static assets with paver
-  script: "edxapp-update-assets-{{item}}"
-  with_items:
-    - cms
-    - lms
-  become_method: sudo
-  become: yes
-  become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
-

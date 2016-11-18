@@ -6,10 +6,13 @@ then
 else
     ansible-playbook -c local -i "localhost," prepare.yml
     if [ -z "$2" ]
-	then
-	    /tmp/edxthemevenv/bin/ansible-playbook -c local -i "localhost," main.yml -e theme_branch="\'$1\'"
-	else
-		/tmp/edxthemevenv/bin/ansible-playbook -c local -i "localhost," main.yml -e theme_branch="\'$1\'" -e theme_repo="\'$2\'"
-	fi
+    then
+        ~/.edxthemevenv/bin/ansible-playbook -c local -i "localhost," main.yml -e "theme_branch=$1"
+    elif [ -z "$3" ]
+    then
+        ~/.edxthemevenv/bin/ansible-playbook -c local -i "localhost," main.yml -e "theme_branch=$1 theme_repo=$2"
+    else
+        ~/.edxthemevenv/bin/ansible-playbook -i inventory.ini main.yml -e "theme_branch=$1 theme_repo=$2 edx_hosts=$3"
+    fi
 
 fi

@@ -1,6 +1,5 @@
 ---
-- hosts: localhost
-  connection: local
+- hosts: "{{ edx_hosts | default('localhost') }}"
   roles: 
     - { role: "update-com-theme", ignore_errors: no,
         theme_dir: "/edx/app/edxapp/themes",
@@ -14,6 +13,7 @@
         edxapp_data_dir: "{{ COMMON_DATA_DIR }}/edxapp",
         edxapp_staticfile_dir: "{{ edxapp_data_dir }}/staticfiles",
         edxapp_user: "edxapp",
-        common_web_group: "www-data"
+        common_web_group: "www-data",
+        git_key: "{{ lookup('file', '~/.ssh/id_rsa_git') }}"
 
       }
