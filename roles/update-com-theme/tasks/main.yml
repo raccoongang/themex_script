@@ -63,7 +63,7 @@
   become_method: sudo
   become: yes
   become_user: "root"
-  when: "'https://' not in theme_repo" and git_st.stat.islnk is defined
+  when: "'https://' not in theme_repo and git_st.stat.islnk is defined"
 
 - name: Deploy git SSH private key for edxapp
   copy:
@@ -76,7 +76,7 @@
   become_method: sudo
   become: yes
   become_user: "root"
-  when: "'https://' not in theme_repo" and git_st.stat.islnk is defined
+  when: "'https://' not in theme_repo and git_st.stat.islnk is defined"
   
 - name: Clone git theme repo
   git: 
@@ -169,4 +169,7 @@
 
 - name: Run /edx/bin/update
   local_action: shell /edx/bin/update edx-platform "{{ git_branch_output.stdout }}" > /tmp/theme-update-edx.log
+  become_method: sudo
+  become: yes
+  become_user: root
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
