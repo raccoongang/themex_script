@@ -1,19 +1,60 @@
 ---
 - hosts: "{{ edx_hosts | default('localhost') }}"
-  roles: 
-    - { role: "update-com-theme", ignore_errors: no,
-        theme_dir: "/edx/app/edxapp/themes",
-        theme_repo: "https://github.com/raccoongang/themes_for_themex.io.git",
-        theme_branch: "racoongang-theme",
-        json_path: '/edx/app/edxapp',
-        server_vars_path: '/edx/app/edx_ansible/server-vars.yml',
-        THEME_DIRS: "{{ theme_dir }}",
-        SITE_THEME: "{{ theme_branch }}",
-        COMMON_DATA_DIR: "/edx/var/",
-        edxapp_data_dir: "{{ COMMON_DATA_DIR }}/edxapp",
-        edxapp_staticfile_dir: "{{ edxapp_data_dir }}/staticfiles",
-        edxapp_user: "edxapp",
-        common_web_group: "www-data",
-        git_key: "{{ lookup('file', '~/.ssh/id_rsa_git') }}"
+  pre_tasks:
+    - name: Check if devstack exist
+      stat: 
+        path: "/vagrant"
+      register: devstack
 
-      }
+    - name: Create themes root dir
+      file:
+        path: "{{ theme_dir_main }}"
+        state: directory
+      become_method: sudo
+      become: yes
+      become_user: edxapp
+
+    - name: set_fact script_mode
+      set_fact:
+        script_mode: "{{ mode }}"
+      when: mode is defined
+
+    - name: Check if devstack
+      fail:
+        msg: "Playbook not applicable for devstack"
+      when: ((devstack.stat.exists) and (("{{ script_mode }}" == 'l') or ("{{ script_mode }}" == 'r') or ("{{ script_mode }}" == 'b') or ("{{ script_mode }}" == 'br')))
+
+    - name: Generate SSH keys for user ubuntu
+      user:
+        name: "ubuntu"
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: "{{ git_ssh_key }}"
+        state: present
+      register: git_ssh_key
+      when: ("{{ script_mode }}" == 'br')
+
+  roles:
+    - role: theme-zip
+      theme_file_path: "{{ local_zip }}"
+      when: ("{{ script_mode }}" == 'l') and (script_mode is defined) and (local_zip is defined)
+
+    - role: theme-zip
+      theme_url: "{{ remote_zip }}"
+      when: ("{{ script_mode }}" == 'r') and (script_mode is defined) and (remote_zip is defined)
+
+    - role: branch
+      theme_branch: "{{ theme_branch }}"
+      theme_repo: "https://github.com/raccoongang/themes_for_themex.io.git"
+      when: ("{{ script_mode }}" == 'b') and (script_mode is defined) and (theme_branch is defined)
+
+    - role: branch
+      theme_branch: "{{ theme_branch }}"
+      theme_repo: "{{ theme_repo }}"
+      when: (("{{ script_mode }}" == 'br') or ("{{ script_mode }}" == 'brh') or ("{{ script_mode }}" == 'brhi')) and (script_mode is defined) and (theme_branch is defined) and (theme_repo is defined)
+
+    - role: update-com-theme
+      theme_dir: "{{ theme_folder_main }}"
+      ignore_errors: no
+      SITE_THEME: "{{ theme_folder }}"
+      when: (theme_folder_main is defined) and (theme_folder is defined)

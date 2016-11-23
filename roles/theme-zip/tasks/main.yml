@@ -1,0 +1,68 @@
+---
+- name: Check if theme zip-file exist
+  stat:
+    path: "{{ theme_file_path }}"
+  register: check
+  when: ("{{ script_mode }}" == 'l')
+
+- name: check file type
+  find:
+    paths: "{{ theme_file_path }}"
+    patterns: "*.zip"
+  register: theme_zip
+  when: ("{{ script_mode }}" == 'l')
+
+- name: Get theme_folder_main name
+  set_fact: 
+    theme_folder_main: "{{ raccoongang_theme_dir_main }}"
+
+- name: Remove theme directory
+  file:
+    path: "{{ theme_dir_main }}/{{theme_folder_main}}"
+    state: absent
+  when: (theme_folder_main is defined)
+  become_method: sudo
+  become: yes
+  become_user: edxapp
+
+- name: Create theme directory
+  file:
+    path: "{{ theme_dir_main }}/{{theme_folder_main}}"
+    state: directory
+  when: (theme_folder_main is defined)
+  become_method: sudo
+  become: yes
+  become_user: edxapp
+
+- name: unzip theme
+  unarchive:
+    src: "{{ theme_file_path }}"
+    dest: "{{ theme_dir_main }}/{{theme_folder_main}}" 
+  when: (check.stat.exists) and (theme_folder_main is defined) and ("{{ script_mode }}" == 'l')
+  become_method: sudo
+  become: yes
+  become_user: edxapp
+
+- name: unzip theme
+  unarchive:
+    src: "{{ theme_url }}"
+    dest: "{{ theme_dir_main }}/{{theme_folder_main}}"
+    remote_src: yes
+  when: ("{{ script_mode }}" == 'r')
+  become_method: sudo
+  become: yes
+  become_user: edxapp
+
+- name: Get theme_folder_name_data
+  shell: 'ls {{ theme_dir_main }}/{{theme_folder_main}}/'
+  register: theme_folder_name_data
+
+- name: Get theme_folder
+  set_fact:
+    theme_folder: "{{ theme_folder_name_data.stdout }}"
+- name: Get theme_folder
+  set_fact:
+    theme_folder_main: "{{ theme_dir_main }}/{{raccoongang_theme_dir_main}}"
+
+#- debug: msg="{{ theme_folder_main }}"
+#- debug: msg="{{ theme_folder }}"

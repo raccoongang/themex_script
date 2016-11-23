@@ -1,0 +1,33 @@
+---
+- name: Create .ssh directory for edxapp
+  file:
+    path: "{{ edxapp_data_dir }}/.ssh"
+    state: directory
+    owner: "edxapp"
+    group: "edxapp"
+    recurse: yes
+  become_method: sudo
+  become: yes
+  become_user: "root"
+
+- name: Check if git private key ( ~/.ssh/id_rsa_git ) exists
+  stat: 
+    path: "{{ git_ssh_key.ssh_key_file }}"
+  register: git_st
+
+- debug: msg="{{git_ssh_key}}"
+- debug: msg="{{git_st}}"
+
+- name: Deploy git SSH private key for edxapp
+  copy:
+    content: "{{ git_ssh_key.ssh_public_key }}"
+    dest: "{{ edxapp_data_dir }}/.ssh/id_rsa"
+    owner: "edxapp"
+    group: "edxapp" 
+    mode: 0600
+    force: yes
+  become_method: sudo
+  become: yes
+  become_user: "root"
+  when: git_st.stat.exists
+
