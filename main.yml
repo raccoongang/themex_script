@@ -22,7 +22,7 @@
     - name: Check if devstack
       fail:
         msg: "Playbook not applicable for devstack"
-      when: ((devstack.stat.exists) and (("{{ script_mode }}" == 'l') or ("{{ script_mode }}" == 'r') or ("{{ script_mode }}" == 'b') or ("{{ script_mode }}" == 'br')))
+      when: devstack.stat.exists
 
     - name: Generate SSH keys for user ubuntu
       user:
