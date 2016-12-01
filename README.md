@@ -1,4 +1,5 @@
 ##OpenEdx Comprehensive theme autoinstall
+####*Playbook not applicable for Vagrant devstack
 
 ###QUICK START:
 ###REQUIREMENTS:
@@ -55,7 +56,7 @@ cd themex_script
 ```
 ./update_theme.sh -brhi marvel-yellow-theme-eucalyptus https://github.com/raccoongang/themes_for_themex.io.git edx
 
-inventory.ini file contained (in this case)
+inventory.ini file contains (in this case)
 
 [edx]
 200.83.1.109
