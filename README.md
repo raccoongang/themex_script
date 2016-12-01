@@ -1,4 +1,5 @@
 ##OpenEdx Comprehensive theme autoinstall
+####*Playbook not applicable for Vagrant devstack
 
 ###QUICK START:
 ###REQUIREMENTS:
