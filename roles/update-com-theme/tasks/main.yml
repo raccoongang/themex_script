@@ -28,6 +28,17 @@
   stat:
     path: "{{ server_vars_path }}"
   register: server_vars
+  when: MULTITENANT_SERVER_VARS_LOCAL_LOCATION is undefined
+
+- name: set_fact multitenant_check
+  set_fact:
+    multitenant_check: True
+  when: (MULTITENANT_SERVER_VARS_LOCAL_LOCATION is undefined) and check_theme_root_exist.stat.exists and server_vars.stat.exists
+
+- name: Check if "{{server_vars_path}}" exist for MULTITENANT_SERVER_VARS_LOCAL_LOCATION
+  local_action: stat path="{{ server_vars_path }}"
+  register: server_vars
+  when: MULTITENANT_SERVER_VARS_LOCAL_LOCATION is defined
 
 - name: Check edx-platform vars file
   fail:
@@ -39,7 +50,11 @@
   become_method: sudo
   become: yes
   become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
+  when: (multitenant_check is defined) and (multitenant_check)
+
+- name: Backup server-vars.yml for MULTITENANT_SERVER_VARS_LOCAL_LOCATION
+  local_action: command cp "{{ server_vars_path }}" "{{ server_vars_path }}_{{ current_back.stdout }}"
+  when: (MULTITENANT_SERVER_VARS_LOCAL_LOCATION is defined) and check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_COMPREHENSIVE_THEME_DIR
   lineinfile:
@@ -52,7 +67,15 @@
   become_method: sudo
   become: yes
   become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
+  when: (multitenant_check is defined) and (multitenant_check)
+
+- name: Ensure that server-vars contain EDXAPP_COMPREHENSIVE_THEME_DIR for MULTITENANT_SERVER_VARS_LOCAL_LOCATION
+  local_action: lineinfile dest="{{ server_vars_path }}"
+                regexp='^EDXAPP_COMPREHENSIVE_THEME_DIR:'
+                insertafter=EOF
+                line='EDXAPP_COMPREHENSIVE_THEME_DIR{{':'}} "{{ theme_dir }}/{{ theme_folder }}"'
+                state=present
+  when: (MULTITENANT_SERVER_VARS_LOCAL_LOCATION is defined) and check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_COMPREHENSIVE_THEME_DIRS
   lineinfile:
@@ -65,7 +88,15 @@
   become_method: sudo
   become: yes
   become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
+  when: (multitenant_check is defined) and (multitenant_check)
+
+- name: Ensure that server-vars contain EDXAPP_COMPREHENSIVE_THEME_DIRS for MULTITENANT_SERVER_VARS_LOCAL_LOCATION
+  local_action: lineinfile dest="{{ server_vars_path }}"
+                regexp='^EDXAPP_COMPREHENSIVE_THEME_DIRS:'
+                insertafter=EOF
+                line="EDXAPP_COMPREHENSIVE_THEME_DIRS{{':'}}  [{{theme_dir}}]"
+                state=present
+  when: (MULTITENANT_SERVER_VARS_LOCAL_LOCATION is defined) and check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_DEFAULT_SITE_THEME
   lineinfile:
@@ -78,7 +109,15 @@
   become_method: sudo
   become: yes
   become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
+  when: (multitenant_check is defined) and (multitenant_check)
+
+- name: Ensure that server-vars contain EDXAPP_DEFAULT_SITE_THEME for MULTITENANT_SERVER_VARS_LOCAL_LOCATION
+  local_action: lineinfile dest="{{ server_vars_path }}"
+                regexp='^EDXAPP_DEFAULT_SITE_THEME:'
+                insertafter=EOF
+                line='EDXAPP_DEFAULT_SITE_THEME{{":"}} "{{ SITE_THEME }}"'
+                state=present
+  when: (MULTITENANT_SERVER_VARS_LOCAL_LOCATION is defined) and check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Ensure that server-vars contain EDXAPP_ENABLE_COMPREHENSIVE_THEMING
   lineinfile:
@@ -91,7 +130,15 @@
   become_method: sudo
   become: yes
   become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
+  when: (multitenant_check is defined) and (multitenant_check)
+
+- name: Ensure that server-vars contain EDXAPP_ENABLE_COMPREHENSIVE_THEMING for MULTITENANT_SERVER_VARS_LOCAL_LOCATION
+  local_action: lineinfile dest="{{server_vars_path}}"
+                regexp='^EDXAPP_ENABLE_COMPREHENSIVE_THEMING:'
+                insertafter=EOF
+                line='EDXAPP_ENABLE_COMPREHENSIVE_THEMING{{":"}} true'
+                state=present
+  when: (MULTITENANT_SERVER_VARS_LOCAL_LOCATION is defined) and check_theme_root_exist.stat.exists and server_vars.stat.exists
 
 - name: Get current edx-platform git branch
   shell: cd /edx/app/edxapp/edx-platform/ && git branch | grep \* | sed "s/(\|)//g" | sed "s/*//g" | awk '{print $NF }'
@@ -105,5 +152,5 @@
   become_method: sudo
   become: yes
   become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
+  when: (multitenant_check is defined) and (multitenant_check)
 

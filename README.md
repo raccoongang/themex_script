@@ -56,10 +56,23 @@ cd themex_script
 ```
 ./update_theme.sh -brhi marvel-yellow-theme-eucalyptus https://github.com/raccoongang/themes_for_themex.io.git edx
 
-inventory.ini file contained (in this case)
+inventory.ini file contains (in this case)
 
 [edx]
 200.83.1.109
+```
+###setup theme branch in custom repo into some group of edx hosts (multitenant installation with local server-vars file):
+```
+./example_multitenant_update_theme.sh --edx-update-run
+
+# or you can just update theme repo and run update_assets:
+
+./example_multitenant_update_theme.sh --no-edx-update-run 
+
+*configure variables and prepare update and update_assets scripts before run
+** script use update_theme.sh with -brhim mode:
+   ./update_theme.sh -brhim theme_branch theme_repo edx_host_group hosts_file_path server_vars_file_path
+   and then run update/update_assets multitenant scripts
 ```
 
 #### If you use some configuration server for setup theme on remote Edx instance you need to install ansible locally

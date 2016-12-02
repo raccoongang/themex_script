@@ -10,6 +10,7 @@
   become_method: sudo
   become: yes
   become_user: root
+  when: MULTITENANT_SERVER_VARS is undefined
 
 - name: install libraries with pip
   pip: 

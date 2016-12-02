@@ -19,6 +19,16 @@
         script_mode: "{{ mode }}"
       when: mode is defined
 
+    - name: set_fact script_mode
+      set_fact:
+        MULTITENANT_SERVER_VARS_LOCAL_LOCATION: "{{ MULTITENANT_SERVER_VARS }}"
+      when: MULTITENANT_SERVER_VARS is defined
+
+    - name: set_fact script_mode
+      set_fact:
+        server_vars_path: "{{ MULTITENANT_SERVER_VARS }}"
+      when: MULTITENANT_SERVER_VARS is defined
+
     - name: Check if devstack
       fail:
         msg: "Playbook not applicable for devstack"
@@ -51,10 +61,11 @@
     - role: branch
       theme_branch: "{{ theme_branch }}"
       theme_repo: "{{ theme_repo }}"
-      when: (("{{ script_mode }}" == 'br') or ("{{ script_mode }}" == 'brh') or ("{{ script_mode }}" == 'brhi')) and (script_mode is defined) and (theme_branch is defined) and (theme_repo is defined)
+      when: (("{{ script_mode }}" == 'br') or ("{{ script_mode }}" == 'brh') or ("{{ script_mode }}" == 'brhi') or ("{{ script_mode }}" == 'brhim')) and (script_mode is defined) and (theme_branch is defined) and (theme_repo is defined)
 
     - role: update-com-theme
       theme_dir: "{{ theme_folder_main }}"
       ignore_errors: no
       SITE_THEME: "{{ theme_folder }}"
       when: (theme_folder_main is defined) and (theme_folder is defined)
+
