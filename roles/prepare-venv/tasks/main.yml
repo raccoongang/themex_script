@@ -7,6 +7,8 @@
   with_items:
     - python-pip
     - libffi-dev
+    - gcc
+    - libssl-dev
   become_method: sudo
   become: yes
   become_user: root
