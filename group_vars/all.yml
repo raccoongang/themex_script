@@ -4,3 +4,4 @@ server_vars_path: '/edx/app/edx_ansible/server-vars.yml'
 raccoongang_theme_dir_main: 'raccoongang_theme'
 edxapp_data_dir: "/edx/app/edxapp"
 git_ssh_key: "~/.ssh/id_rsa_git"
+edx_full_update: "no"

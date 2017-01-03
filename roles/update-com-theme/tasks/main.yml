@@ -29,11 +29,6 @@
     path: "{{ server_vars_path }}"
   register: server_vars
 
-- name: Check edx-platform vars file
-  fail:
-    msg: "{{ server_vars_path }} does not exists"
-  when: not server_vars.stat.exists
-
 - name: Backup server-vars.yml
   command: cp "{{ server_vars_path }}" "{{ server_vars_path }}_{{ current_back.stdout }}"
   become_method: sudo
@@ -93,9 +88,67 @@
   become_user: root
   when: check_theme_root_exist.stat.exists and server_vars.stat.exists
 
+- name: Check if lms.env.json exist
+  stat:
+    path: "{{ edxapp_data_dir }}/lms.env.json"
+  register: lms_json
+
+- name: Check if cms.env.json exist
+  stat:
+    path: "{{ edxapp_data_dir }}/cms.env.json"
+  register: cms_json
+
+- name: Backup lms.env.json and cms.env.json in "{{ edxapp_data_dir }}"
+  command: cp "{{ edxapp_data_dir }}/{{ item }}" "{{ edxapp_data_dir }}/{{ item }}_{{ current_back.stdout }}"
+  with_items:
+    - "lms.env.json"
+    - "cms.env.json"
+  become_method: sudo
+  become: yes
+  become_user: root
+  when: (lms_json.stat.exists) and (cms_json.stat.exists)
+
+- name: Copy update script
+  copy:
+    src: update-edxapp-json.py
+    dest: /tmp/update-edxapp-json.py
+
+- name: Update lms.env.json and cms.env.json
+  script: "/tmp/update-edxapp-json.py {{ edxapp_data_dir }} {{ theme_dir }}/{{ theme_folder }} {{theme_dir}} {{ SITE_THEME }}"
+  become: yes
+  become_user: edxapp
+
+- name: Remove update script
+  file:
+    path: /tmp/update-edxapp-json.py
+    state: absent
+
+- name: Restart edxapp
+  shell: "/edx/bin/supervisorctl restart edxapp:"
+  become_method: sudo
+  become: yes
+  become_user: root
+
+- name: Copy update assets script
+  copy:
+    src: edxapp-update-assets-lms
+    dest: /tmp/update-assets-lms
+
+- name: Update lms assets with paver
+  script: /tmp/update-assets-lms
+  become_method: sudo
+  become: yes
+  become_user: ubuntu
+
+- name: Remove update assets script
+  file:
+    path: /tmp/update-assets-lms
+    state: absent
+
 - name: Get current edx-platform git branch
   shell: cd /edx/app/edxapp/edx-platform/ && git branch | grep \* | sed "s/(\|)//g" | sed "s/*//g" | awk '{print $NF }'
   register: git_branch_output
+  when: ("{{ edx_full_update }}" == 'yes')
   become_method: sudo
   become: yes
   become_user: edxapp
@@ -105,5 +158,5 @@
   become_method: sudo
   become: yes
   become_user: root
-  when: check_theme_root_exist.stat.exists and server_vars.stat.exists
+  when: (check_theme_root_exist.stat.exists) and (server_vars.stat.exists) and ("{{ edx_full_update }}" == 'yes')
 
