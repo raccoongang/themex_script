@@ -5,6 +5,7 @@
     name: "{{ item }}" 
     update_cache: yes
   with_items:
+    - python
     - python-pip
     - libffi-dev
     - gcc
@@ -19,6 +20,9 @@
     state: present
   with_items:
     - virtualenv
+  become_method: sudo
+  become: yes
+  become_user: root
 
 - name: Create tmp edxthemevenv
   file: 
