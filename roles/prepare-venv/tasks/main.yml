@@ -1,45 +1,17 @@
 ---
 
 - name: Update repositories cache and install packages
-  apt: 
-    name: "{{ item }}" 
+  apt:
+    name: "{{ item }}"
     update_cache: yes
-  with_items:
-    - python
-    - python-pip
-    - libffi-dev
-    - gcc
-    - libssl-dev
+  with_items: "{{ required_packages }}"
   become_method: sudo
   become: yes
   become_user: root
 
-- name: install libraries with pip
-  pip: 
-    name: "{{ item }}" 
+- name: Install pip requirements
+  pip:
+    name: "{{ item }}"
+    virtualenv: "~/.edxthemevenv"
     state: present
-  with_items:
-    - virtualenv
-  become_method: sudo
-  become: yes
-  become_user: root
-
-- name: Create tmp edxthemevenv
-  file: 
-    path: ~/.edxthemevenv 
-    state: directory
-
-- name: copy requirements to edxthemevenv
-  copy: 
-    src: "{{ item }}" 
-    dest: "~/.edxthemevenv"
-  with_items:
-    - requirements_main.txt
-
-- name: install requirements
-  pip: 
-    requirements: "{{ item }}" 
-    virtualenv: "~/.edxthemevenv" 
-    state: present
-  with_items:
-    - ~/.edxthemevenv/requirements_main.txt
+  with_items: "{{ pip_requirements }}"
