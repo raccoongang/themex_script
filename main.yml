@@ -2,7 +2,7 @@
 - hosts: "{{ edx_hosts | default('localhost') }}"
   pre_tasks:
     - name: Check if devstack exist
-      stat: 
+      stat:
         path: "/vagrant"
       register: devstack
 
@@ -24,16 +24,6 @@
         msg: "Playbook not applicable for devstack"
       when: devstack.stat.exists
 
-    - name: Generate SSH keys for user ubuntu
-      user:
-        name: "ubuntu"
-        generate_ssh_key: yes
-        ssh_key_bits: 2048
-        ssh_key_file: "{{ git_ssh_key }}"
-        state: present
-      register: git_ssh_key
-      when: ("{{ script_mode }}" == 'br')
-
   roles:
     - role: theme-zip
       theme_file_path: "{{ local_zip }}"
@@ -44,14 +34,14 @@
       when: ("{{ script_mode }}" == 'r') and (script_mode is defined) and (remote_zip is defined)
 
     - role: branch
-      theme_branch: "{{ theme_branch }}"
-      theme_repo: "https://github.com/raccoongang/themes_for_themex.io.git"
-      when: ("{{ script_mode }}" == 'b') and (script_mode is defined) and (theme_branch is defined)
+      branch: "{{ theme_branch }}"
+      repo: "https://github.com/raccoongang/themes_for_themex.io.git"
+      when: ("{{ script_mode }}" == 'b') and (script_mode is defined) and (branch is defined)
 
     - role: branch
-      theme_branch: "{{ theme_branch }}"
-      theme_repo: "{{ theme_repo }}"
-      when: (("{{ script_mode }}" == 'br') or ("{{ script_mode }}" == 'brh') or ("{{ script_mode }}" == 'brhi')) and (script_mode is defined) and (theme_branch is defined) and (theme_repo is defined)
+      branch: "{{ theme_branch }}"
+      repo: "{{ theme_repo }}"
+      when: (("{{ script_mode }}" == 'br') or ("{{ script_mode }}" == 'brh') or ("{{ script_mode }}" == 'brhi')) and (script_mode is defined) and (theme_branch is defined) and (repo is defined)
 
     - role: update-com-theme
       theme_dir: "{{ theme_folder_main }}"

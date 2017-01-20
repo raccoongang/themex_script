@@ -1,7 +1,7 @@
 ---
 - name: Remove theme directory
-  file: 
-    path: "{{ theme_dir_main }}/{{ theme_branch }}" 
+  file:
+    path: "{{ theme_dir_main }}/{{ branch }}"
     state: absent
   become_method: sudo
   become: yes
@@ -11,10 +11,10 @@
   when: ("{{ script_mode }}" == 'br')
 
 - name: Clone git theme repo
-  git: 
-    repo: "{{ theme_repo }}"
-    version: "{{ theme_branch }}"
-    dest: "{{ theme_dir_main }}/{{raccoongang_theme_dir_main}}/{{ theme_branch }}"
+  git:
+    repo: "{{ repo }}"
+    version: "{{ branch }}"
+    dest: "{{ theme_dir_main }}/{{raccoongang_theme_dir_main}}/{{ branch }}"
     ssh_opts: "-o StrictHostKeyChecking=no"
     accept_hostkey: yes
     force: yes
@@ -24,7 +24,7 @@
 
 - name: Get theme_folder
   set_fact:
-    theme_folder: "{{ theme_branch }}"
+    theme_folder: "{{ branch }}"
 - name: Get theme_folder
   set_fact:
     theme_folder_main: "{{ theme_dir_main }}/{{raccoongang_theme_dir_main}}"

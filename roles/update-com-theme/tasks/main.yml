@@ -18,6 +18,7 @@
   local_action: shell date +%s
   register: current_back
   run_once: true
+  tags: skip_ansible_lint
 
 - name: Check if themes root dir exist
   stat:
@@ -124,10 +125,11 @@
     state: absent
 
 - name: Restart edxapp
-  shell: "/edx/bin/supervisorctl restart edxapp:"
+  command: "/edx/bin/supervisorctl restart edxapp:"
   become_method: sudo
   become: yes
   become_user: root
+  tags: skip_ansible_lint
 
 - name: Copy update assets script
   copy:

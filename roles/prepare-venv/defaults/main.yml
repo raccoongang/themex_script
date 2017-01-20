@@ -1,0 +1,4 @@
+---
+
+pip_requirements:
+    - ansible==2.2.0

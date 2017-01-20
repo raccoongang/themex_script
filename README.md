@@ -18,22 +18,22 @@ git clone https://github.com/raccoongang/themex_script.git
 cd themex_script
 ```
 
-### use local zip theme file:  
+### use local zip theme file:
 ```
 ./update_theme.sh -l /some/local/zip-file/path/theme-name.zip
 ```
 
-###use remote zip theme file: 
+###use remote zip theme file:
 ```
 ./update_theme.sh -r http://themex.io/...../theme-name.zip
 ```
 
-###use theme branch in raccoongan repo (download theme from raccoongang repo with specific branch): 
+###use theme branch in raccoongan repo (download theme from raccoongang repo with specific branch):
 ```
 ./update_theme.sh -b theme_branch
 ```
 
-###theme branch in custom repo (download theme from specific repo with specific branch): 
+###theme branch in custom repo (download theme from specific repo with specific branch):
 ```
 ./update_theme.sh -br theme_branch theme_repo
 ```
@@ -48,7 +48,7 @@ cd themex_script
 ```
 
 
-###setup theme branch in custom repo into some group of edx hosts (!you need to modify inventory.ini file!): 
+###setup theme branch in custom repo into some group of edx hosts (!you need to modify inventory.ini file!):
 ```
 ./update_theme.sh -brhi theme_branch theme_repo edx_host_group
 ```

@@ -13,7 +13,7 @@
   when: ("{{ script_mode }}" == 'l')
 
 - name: Get theme_folder_main name
-  set_fact: 
+  set_fact:
     theme_folder_main: "{{ raccoongang_theme_dir_main }}"
 
 - name: Remove theme directory
@@ -37,7 +37,7 @@
 - name: unzip theme
   unarchive:
     src: "{{ theme_file_path }}"
-    dest: "{{ theme_dir_main }}/{{theme_folder_main}}" 
+    dest: "{{ theme_dir_main }}/{{theme_folder_main}}"
   when: (check.stat.exists) and (theme_folder_main is defined) and ("{{ script_mode }}" == 'l')
   become_method: sudo
   become: yes
@@ -54,15 +54,19 @@
   become_user: edxapp
 
 - name: Get theme_folder_name_data
-  shell: 'ls {{ theme_dir_main }}/{{theme_folder_main}}/'
+  command: 'ls {{ theme_dir_main }}/{{theme_folder_main}}/'
   register: theme_folder_name_data
+  tags: skip_ansible_lint
 
 - name: Get theme_folder
   set_fact:
     theme_folder: "{{ theme_folder_name_data.stdout }}"
-- name: Get theme_folder
+  tags: skip_ansible_lint
+
+- name: Get theme_folder_main
   set_fact:
     theme_folder_main: "{{ theme_dir_main }}/{{raccoongang_theme_dir_main}}"
+  tags: skip_ansible_lint
 
 #- debug: msg="{{ theme_folder_main }}"
 #- debug: msg="{{ theme_folder }}"
