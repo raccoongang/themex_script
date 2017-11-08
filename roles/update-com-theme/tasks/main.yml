@@ -140,7 +140,7 @@
   script: /tmp/update-assets-lms
   become_method: sudo
   become: yes
-  become_user: ubuntu
+  become_user: root
 
 - name: Remove update assets script
   file:
